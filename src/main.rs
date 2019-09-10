@@ -1,12 +1,20 @@
-#![feature(proc_macro_hygiene, decl_macro)]
+use config as app_config;
+use rocket::config::{Config, Environment};
 
-#[macro_use] extern crate rocket;
-
-#[get("/")]
-fn index() -> &'static str {
-    "Ralo, word!"
-}
+mod youdao;
+use youdao::Youdao;
 
 fn main() {
-    rocket::ignite().mount("/", routes![index]).launch();
+    let mut conf = app_config::Config::default();
+    conf.merge(app_config::File::with_name("config")).unwrap();
+
+    let rc = Config::build(Environment::Production)
+        .address("localhost")
+        .port(8123)
+        .finalize()
+        .unwrap();
+
+    rocket::custom(rc)
+        .mount("/youdao", Youdao::from_config(&conf))
+        .launch();
 }

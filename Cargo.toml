@@ -5,4 +5,9 @@ authors = ["LOU Xun <aquarhead@ela.build>"]
 edition = "2018"
 
 [dependencies]
-rocket = "0.4.2"
+rocket = "0.4"
+reqwest = "0.9"
+serde = "1.0"
+rocksdb = "0.12"
+url = "2.1"
+config = {version = "0.9", default-features = false, features = ["toml"]}
