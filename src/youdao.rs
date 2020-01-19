@@ -17,7 +17,7 @@ struct YoudaoResponse {
 
 #[derive(Clone)]
 pub struct Youdao {
-  base_url: Url,
+  api: Url,
   keyfrom: String,
   key: String,
   cache: Db,
@@ -26,7 +26,7 @@ pub struct Youdao {
 impl Youdao {
   pub fn from_config(conf: &Config) -> Self {
     Youdao {
-      base_url: Url::parse(&conf.get_str("youdao.base_url").unwrap()).unwrap(),
+      api: Url::parse(&conf.get_str("youdao.api").unwrap()).unwrap(),
       keyfrom: conf.get_str("youdao.keyfrom").unwrap(),
       key: conf.get_str("youdao.key").unwrap(),
       cache: sled::open("youdao.cache").unwrap(),
@@ -36,7 +36,7 @@ impl Youdao {
 
 impl Upstream for Youdao {
   fn query_url(&self, word: &str) -> Url {
-    let mut url = self.base_url.clone();
+    let mut url = self.api.clone();
     url
       .query_pairs_mut()
       .append_pair("keyfrom", &self.keyfrom)
@@ -46,8 +46,13 @@ impl Upstream for Youdao {
     url
   }
 
-  fn valid_response(_: Response) -> bool {
-    true
+  fn valid_response(resp: &mut Response) -> bool {
+    // check for embedded error
+    if let Ok(ydr) = resp.json::<YoudaoResponse>() {
+      ydr.error_code == 0
+    } else {
+      false
+    }
   }
 }
 
@@ -66,12 +71,15 @@ impl Handler for Youdao {
             trace!("not found in cache: {}", &word);
             let url = self.query_url(&word).into_string();
             trace!("query Youdao: {}", &word);
-            let resp = reqwest::get(&url).unwrap().text().unwrap();
-            trace!("attempt to cache: {}", &word);
-            if let Err(e) = self.cache.insert(word.as_bytes(), resp.as_bytes()) {
-              error!("failed to insert Youdao cache: {}, {}, {}", &word, &resp, e);
+            let mut resp = reqwest::get(&url).unwrap();
+            let ctnt = resp.text().unwrap();
+            if Youdao::valid_response(&mut resp) {
+              trace!("attempt to cache: {}", &word);
+              if let Err(e) = self.cache.insert(word.as_bytes(), ctnt.as_bytes()) {
+                error!("failed to insert Youdao cache: {}, {}, {}", &word, &ctnt, e);
+              }
             }
-            Outcome::from(req, resp)
+            Outcome::from(req, ctnt)
           }
           Err(e) => panic!(e),
         }

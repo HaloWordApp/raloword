@@ -1,8 +1,8 @@
 use config as app_config;
 use rocket::config::{Config, Environment};
 
+mod webster;
 mod youdao;
-use youdao::Youdao;
 
 fn main() {
   env_logger::init();
@@ -16,5 +16,8 @@ fn main() {
     .finalize()
     .unwrap();
 
-  rocket::custom(rc).mount("/youdao", Youdao::from_config(&conf)).launch();
+  rocket::custom(rc)
+    .mount("/youdao", youdao::Youdao::from_config(&conf))
+    .mount("/webster", webster::Webster::from_config(&conf))
+    .launch();
 }
