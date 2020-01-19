@@ -5,16 +5,16 @@ mod youdao;
 use youdao::Youdao;
 
 fn main() {
-    let mut conf = app_config::Config::default();
-    conf.merge(app_config::File::with_name("config")).unwrap();
+  env_logger::init();
 
-    let rc = Config::build(Environment::Production)
-        .address("localhost")
-        .port(8123)
-        .finalize()
-        .unwrap();
+  let mut conf = app_config::Config::default();
+  conf.merge(app_config::File::with_name("config")).unwrap();
 
-    rocket::custom(rc)
-        .mount("/youdao", Youdao::from_config(&conf))
-        .launch();
+  let rc = Config::build(Environment::Production)
+    .address("localhost")
+    .port(8123)
+    .finalize()
+    .unwrap();
+
+  rocket::custom(rc).mount("/youdao", Youdao::from_config(&conf)).launch();
 }
