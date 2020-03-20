@@ -3,7 +3,7 @@ use rand::seq::SliceRandom;
 use sled::Db;
 use url::Url;
 
-use raloword::{impl_upstream, Upstream};
+use raloword::{impl_rocket, Upstream};
 
 #[derive(Clone)]
 pub struct Webster {
@@ -42,4 +42,4 @@ impl Upstream for Webster {
   }
 }
 
-impl_upstream!(Webster);
+impl_rocket!(Webster);

@@ -4,7 +4,7 @@ use serde::Deserialize;
 use sled::Db;
 use url::Url;
 
-use raloword::{impl_upstream, Upstream};
+use raloword::{impl_rocket, Upstream};
 
 #[derive(Deserialize, Debug)]
 struct YoudaoResponse {
@@ -53,4 +53,4 @@ impl Upstream for Youdao {
   }
 }
 
-impl_upstream!(Youdao);
+impl_rocket!(Youdao);

@@ -9,7 +9,7 @@ pub trait Upstream {
 }
 
 #[macro_export]
-macro_rules! impl_upstream {
+macro_rules! impl_rocket {
   ( $typ:ident ) => {
     impl rocket::handler::Handler for $typ {
       fn handle<'r>(&self, req: &'r rocket::Request, _: rocket::Data) -> rocket::handler::Outcome<'r> {
